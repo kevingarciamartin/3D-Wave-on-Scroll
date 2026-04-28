@@ -2,7 +2,7 @@ import { useAspect, useTexture } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { transform } from "framer-motion";
 import { useControls } from "leva";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { fragment, vertex } from "./shader";
 
@@ -18,13 +18,21 @@ export default function Model({ scrollProgress }) {
   const { viewport } = useThree();
 
   const image = useRef();
-  const uniforms = useRef({
-    uvUvScale: { value: new THREE.Vector2(0, 0) },
-    uTexture: { value: texture },
-    uAmplitude: { value: amplitude },
-    uWaveLength: { value: waveLength },
-    uTime: { value: 0 },
-  });
+
+  const uniforms = useMemo(
+    () => {
+      return {
+        uvUvScale: { value: new THREE.Vector2(0, 0) },
+        uTexture: { value: texture },
+        uAmplitude: { value: amplitude },
+        uWaveLength: { value: waveLength },
+        uTime: { value: 0 },
+      };
+    },
+    // Intentional as it improves perfomance.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
   useFrame(() => {
     // Scale image based on progress of the scroll
@@ -65,7 +73,7 @@ export default function Model({ scrollProgress }) {
       <shaderMaterial
         vertexShader={vertex}
         fragmentShader={fragment}
-        uniforms={uniforms.current}
+        uniforms={uniforms}
       />
     </mesh>
   );
